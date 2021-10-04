@@ -4,11 +4,12 @@
 #define VRX        A5
 #define SW         2
 #define BUZZER_PIN 4
+#define HORN_FREQUENCY 3000
 
-Steer steer(SERVO_PIN);
+Steer steer(SERVO_PIN, 0, 1023, 10, 170);
 
 void setup() {
-  steer.Setup(BUZZER_PIN, SW, 2000);
+  steer.Setup(BUZZER_PIN, SW, HORN_FREQUENCY);
 }
 
 void loop() {

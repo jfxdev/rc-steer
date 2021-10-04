@@ -4,20 +4,26 @@
 VarSpeedServo _servo;
 
 unsigned long int servo_time_before = 0, horn_time_before = 0;
+int servo_central_pos, servo_central_pos_min, servo_central_pos_max, servo_error_margin_min, servo_error_margin_max;
 
-Steer::Steer(byte servo_pin, int input_min_reference, int input_max_reference, unsigned int min_pos, unsigned int max_pos){
+Steer::Steer(byte servo_pin, int input_min_reference, int input_max_reference, unsigned int servo_min_pos, unsigned int servo_max_pos, int tolerated_error_margin){
   _servo_pin = servo_pin;
-  _min_pos = min_pos;
-  _max_pos = max_pos;
+  _servo_min_pos = servo_min_pos;
+  _servo_max_pos = servo_max_pos;
+  _servo_error_margin = tolerated_error_margin;
+
   _input_min_reference = input_min_reference;
   _input_max_reference = input_max_reference;
+
+  servo_central_pos = (_servo_max_pos / 2) + _servo_min_pos;
+  servo_central_pos_min = servo_central_pos - tolerated_error_margin;
+  servo_central_pos_max = servo_central_pos + tolerated_error_margin;
 }
 
 void Steer::Read(unsigned int input, bool horn_input){
-  _servo_pos = map(input, _input_min_reference, _input_max_reference, _min_pos, _max_pos);
+  _servo_pos = map(input, _input_min_reference, _input_max_reference, _servo_min_pos, _servo_max_pos);
   if (_horn_enabled) {
     _horn_read = digitalRead(_horn_input_pin);
-    Serial.println(_horn);
   }
 }
 
@@ -58,4 +64,13 @@ void Steer::Setup(byte horn_pin, byte horn_input_pin, int horn_frequency){
   }
 
   Serial.begin(115200);
+}
+
+byte Steer::Direction(){
+  if ((_servo_pos >= servo_central_pos_min) && (_servo_pos <= servo_central_pos_max)){
+     return 0;
+  } else if (_servo_pos < servo_central_pos_min) {
+     return 1;
+  }
+  return 2;
 }
